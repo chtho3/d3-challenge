@@ -35,29 +35,29 @@ var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // defaults on load
-var chosenXAxis = "poverty"
+var chosenXAxis = "age"
 var chosenYAxis = "healthcare"
 
 // function used for updating x-scale var upon click on axis label
-function xScale(censusData, chosenXAxis, xy) {
+function xScale(censusData, chosenXAxis) {
     // create scales
     var xLinearScale = d3.scaleLinear()
       .domain([d3.min(censusData, d => d[chosenXAxis]) * 0.8,
         d3.max(censusData, d => d[chosenXAxis]) * 1.2
       ])
-      .range((xy === "x") ? [0,width]:[height,0]);
+      .range([0,width]);
   
     return xLinearScale;
   
   };
 // function for updating the y-scale var upon click on axis label
-function yScale(censusData, chosenYAxis, xy) {
+function yScale(censusData, chosenYAxis) {
   // create scales
   var yLinearScale = d3.scaleLinear()
     .domain([d3.max(censusData, d => d[chosenYAxis]),
       d3.min(censusData, d => d[chosenYAxis])
     ])
-    .range((xy === "y") ? [0,width]:[height,0]);
+    .range([height,0]);
 
   return yLinearScale;
 };
@@ -97,20 +97,19 @@ function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYA
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
 // define tooltip
-  var toolTip = d3.select("scatter").append("div")
+var toolTip = d3.tip()
     .attr("class", "d3-tip")
+    .offset([80, -60])
     .html(d => (`${d.state}<br>${chosenXAxis}: ${d[chosenXAxis]} <br>${chosenYaxis}: ${d[chosenYAxis]}`));
 
-  svg.call(toolTip);
+  chartGroup.call(toolTip);
 
   circlesGroup.on("mouseover", function(data) {
-    toolTip.show(data.state)
+    toolTip.show(data, this)
   })
     .on("mouseout", function(data, index) {
-      toolTip.hide(data.state);
+      toolTip.hide(data);
     });
-
-  return circlesGroup;
   };
 
 function updateChart() {
@@ -127,7 +126,7 @@ function updateChart() {
   // append x axis
   var xAxis = chartGroup.append("g")
     .classed("x-axis", true)
-    .attr("transform", `translate(0, ${height})`)
+    .attr("transform", `translate(0, ${width})`)
     .call(bottomAxis);
 
   // append y axis
@@ -145,7 +144,7 @@ function updateChart() {
     .attr("cy", d => yLinearScale(d[chosenYaxis]))
     .attr("r", 10);
 
-  // Create group for  2 x- axis labels
+  // Create group for  3 x- axis labels
   var xlabelsGroup = chartGroup.append("g")
     .attr("transform", `translate(${width / 2}, ${height + 20})`);
 
@@ -153,6 +152,7 @@ function updateChart() {
     .attr("x", 0)
     .attr("y", 20)
     .attr("value", "poverty") // value to grab for event listener
+    .attr("class", "axisText")
     .classed("active", true)
     .text("Poverty (%)");
 
@@ -160,13 +160,15 @@ function updateChart() {
     .attr("x", 0)
     .attr("y", 40)
     .attr("value", "age") // value to grab for event listener
+    .attr("class", "axisText")
     .classed("inactive", true)
     .text("Age (Median)");
 
   var incomeLabel = xlabelsGroup.append("text")
     .attr("x", 0)
-    .attr("y", 40)
+    .attr("y", 60)
     .attr("value", "income") // value to grab for event listener
+    .attr("class", "axisText")
     .classed("inactive", true)
     .text("Household Income (Median)");
 
@@ -180,6 +182,7 @@ function updateChart() {
     .attr("x", 0 - (height / 2))
     .attr("value", "healthcare")
     .classed("active", true)
+    .attr("class", "axisText")
     .text("Lack Healthcare (%)");
 
   var smokesLabel = ylabelsGroup.append("text")
@@ -188,6 +191,7 @@ function updateChart() {
     .attr("x", 0 - (height / 2))
     .attr("value", "smokes")
     .classed("inactive", true)
+    .attr("class", "axisText")
     .text("Smokes (%)");
 
   var obeseLabel = ylabelsGroup.append("text")
@@ -196,6 +200,7 @@ function updateChart() {
     .attr("x", 0 - (height / 2))
     .attr("value", "obese")
     .classed("inactive", true)
+    .attr("class", "axisText")
     .text("Obese (%)");
 
   // updateToolTip function above csv import
@@ -337,7 +342,7 @@ d3.csv("../assets/data/data.csv").then(function(censusData, err) {
     data.healthcare = +data.healthcare;
   });
 
-  //function
+
 
 });
 

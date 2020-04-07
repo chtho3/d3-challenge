@@ -1,7 +1,7 @@
 // Step 1: Set up our chart
 //= ================================
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = window.innerWidth - 250;
+var svgHeight = window.innerHeight;
 
 var margin = {
   top: 50,
@@ -21,7 +21,8 @@ var svg = d3
   .select("#scatter")
   .append("svg")
   .attr("width", svgWidth)
-  .attr("height", svgHeight);
+  .attr("height", svgHeight)
+  .classed("chart", true);
 
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -80,20 +81,22 @@ var leftAxis = d3.axisLeft(yLinearScale);
     .attr("cx", d => xLinearScale(d.poverty))
     .attr("cy", d => yLinearScale(d.healthcare))
 
-    var circleText = circlesGroup.append('text')
-    .data(censusData)
-    .text(d => d.abbr)
-    .attr("text-anchor", "middle")
+    var circleText = chartGroup.selectAll(null).data(censusData).enter().append("text");
+
+circleText
     .classed("stateText", true)
-    .attr("font-size", (15*0.8))
+    .text(d => d.abbr)
+    .attr("x", d => xLinearScale(d.poverty))
+    .attr("y", d => yLinearScale(d.healthcare))
+    .attr("font-size", (10))
    ;
 
     // Step 6: Initialize tool tip
     // ==============================
     var toolTip = d3.tip()
-      .attr("class", "tooltip")
+      .attr("class", "d3-tip")
       .offset([80, -60])
-      .html(d => (`${d.state}<br>${poverty}: ${d[poverty]} <br>${healthcare}: ${d[healthcare]}`));
+      .html(d => (`${d.state}<br>Poverty: ${d.poverty} <br>Healthcare: ${d.healthcare}`));
 
     // Step 7: Create tooltip in the chart
     // ==============================
